@@ -7,6 +7,11 @@ const Schema = new mongoose.Schema({
     required: true,
     ref: "User"
   },
+  channel: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+    ref: "Channel"
+  },
   createdAt: { type: Date, default: Date.now }
 });
 

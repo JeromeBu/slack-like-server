@@ -8,6 +8,7 @@ mongoose.connect(
 );
 const User = require("./models/User");
 const Message = require("./models/Message");
+const Channel = require("./models/Channel");
 
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
@@ -49,8 +50,18 @@ app.get("/messages", function(req, res) {
       res.json({ messages });
     });
 });
+app.get("/channels", function(req, res) {
+  console.log("getting channels");
+  Channel.find({})
+    .populate("user", "channel")
+    .exec(function(err, channels) {
+      res.json({ channels });
+    });
+});
 
 io.on("connection", client => {
+  client.join("general");
+  client.join("channel2");
   client.on("newMessage", message => {
     console.log("New message arrived :", message);
     const mes = new Message(message);
@@ -59,6 +70,16 @@ io.on("connection", client => {
       console.log("error in save ? :", error);
       // if (error) return res.satuts(400).send(error);
       io.emit("newMessageDisplay", message);
+    });
+  });
+  client.on("newChannel", channel => {
+    console.log("New channel created : ", channel);
+    const chan = new Channel(channel);
+    console.log("mes : ", chan);
+    chan.save(function(error) {
+      console.log("error in save ? :", error);
+      // if (error) return res.satuts(400).send(error);
+      io.emit("newChannelDisplay", channel);
     });
   });
 });
